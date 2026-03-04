@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>岳麓山抗战遗址导览 | 中南大学红色基因传承调研</title>
+    
+    <!-- SEO & Social Media Meta -->
+    <meta name="description" content="中南大学计算机学院2511班红色基因传承社会实践团制作，带您实地调研岳麓山抗战遗址。">
+    <meta name="theme-color" content="#004d40">
+
+    <style>
+        :root {
+            --csu-green: #004d40;
+            --csu-green-light: #00695c;
+            --csu-gold: #c5a059;
+            --csu-gold-light: #dfc18d;
+            --text-dark: #2c3e50;
+            --sidebar-w: 340px;
+            --safe-transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'PingFang SC', 'SF Pro Display', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            height: 100%; width: 100%; overflow: hidden;
+            background-color: #000;
+        }
+
+        /* 全屏转场系统 */
+        .screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; opacity: 0; 
+            transition: var(--safe-transition);
+        }
+        .screen.active { display: flex; opacity: 1; z-index: 10; }
+        .screen.zoom-out { transform: scale(1.1); opacity: 0; filter: blur(20px); pointer-events: none; }
+
+        /* --- 欢迎页面：极致视觉 --- */
+        #welcome-screen {
+            background: #000; color: white; justify-content: center; align-items: center; text-align: center;
+        }
+
+        .bg-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1541339907198-e08756ebafe3?w=1600') center/cover;
+            animation: kenburns 30s infinite alternate;
+            z-index: 0;
+        }
+        .overlay-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0,77,64,0.7) 0%, rgba(0,20,15,0.95) 100%);
+            z-index: 1;
+        }
+
+        @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.2); } }
+
+        .welcome-card {
+            position: relative; z-index: 2; padding: 50px 30px; border-radius: 32px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            max-width: 500px; width: 90%;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        }
+
+        .csu-logo {
+            width: 90px; height: 90px; margin: 0 auto 25px;
+            background: #fff; border-radius: 50%; padding: 10px;
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.4);
+            animation: dropIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        h1 {
+            font-size: 2.6em; margin: 0; font-weight: 800; letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 30%, var(--csu-gold) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            display: inline-block; margin-top: 15px; padding: 6px 16px; 
+            background: var(--csu-gold); color: #432; font-size: 12px;
+            font-weight: bold; border-radius: 50px; letter-spacing: 2px;
+            animation: fadeIn 1.2s ease-out 0.5s both;
+        }
+
+        .btn-explore {
+            margin-top: 40px; padding: 20px 50px; border: none; border-radius: 100px;
+            background: linear-gradient(135deg, var(--csu-green) 0%, #002d20 100%);
+            color: white; font-size: 1.2em; font-weight: bold; cursor: pointer;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: 0.3s;
+            animation: slideUp 1s ease-out 0.8s both;
+        }
+        .btn-explore:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0,77,64,0.5); }
+        .btn-explore:active { transform: scale(0.95); }
+
+        /* --- 主界面：App 级体验 --- */
+        #main-app { flex-direction: row; background: #f4f6f3; }
+        
+        #sidebar {
+            width: var(--sidebar-w); height: 100%; background: #fff;
+            display: flex; flex-direction: column; z-index: 100;
+            box-shadow: 15px 0 50px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-brand {
+            padding: 35px 25px; background: var(--csu-green); color: white;
+            position: relative; overflow: hidden;
+        }
+        .sidebar-brand::after {
+            content: ''; position: absolute; right: -20px; bottom: -20px;
+            width: 100px; height: 100px; background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .site-list { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
+        .site-card {
+            display: flex; gap: 15px; align-items: center; padding: 15px;
+            background: #fff; border: 1px solid #f0f0f0; border-radius: 18px;
+            margin-bottom: 15px; cursor: pointer; transition: var(--safe-transition);
+        }
+        .site-card:hover { transform: translateY(-3px); border-color: var(--csu-gold); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .site-card.active { border-left: 5px solid var(--csu-green); background: #f0f7f6; }
+        
+        .card-thumb { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; flex-shrink: 0; background: #eee; }
+        .card-info h4 { margin: 0 0 5px; color: var(--csu-green); font-size: 15px; }
+        .card-info p { margin: 0; font-size: 12px; color: #999; }
+
+        #map-container { flex: 1; position: relative; }
+        
+        /* 自定义地图控件 */
+        .map-type-switch {
+            position: absolute; top: 20px; right: 20px; z-index: 500;
+            display: flex; background: white; border-radius: 10px; padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee;
+        }
+        .map-type-btn {
+            padding: 8px 15px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; background: none;
+        }
+        .map-type-btn.active { background: var(--csu-green); color: white; }
+
+        /* --- 弹窗：深度阅读 --- */
+        #info-popup {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .popup-window {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 500px; background: white;
+            border-radius: 30px 30px 0 0; overflow: hidden;
+            animation: popupSlideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .popup-header { height: 280px; position: relative; }
+        .popup-header img { width: 100%; height: 100%; object-fit: cover; }
+        .popup-close {
+            position: absolute; top: 20px; right: 20px; width: 36px; height: 36px;
+            background: rgba(0,0,0,0.5); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .popup-content { padding: 35px; }
+        .popup-content h2 { margin: 0 0 20px; color: var(--csu-green); border-bottom: 2px solid var(--csu-gold); padding-bottom: 10px; }
+        .popup-content p { line-height: 1.8; color: #444; font-size: 16px; margin-bottom: 30px; }
+
+        .nav-actions { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .btn-nav { padding: 18px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-main { background: var(--csu-green); color: white; }
+        .btn-sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-outline { background: #f5f5f5; color: var(--text-dark); }
+
+        /* 动画定义 */
+        @keyframes dropIn { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popupSlideUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+
+        /* 移动端特殊优化 */
+        @media (max-width: 768px) {
+            #main-app { flex-direction: column; }
+            #sidebar { width: 100%; height: 45vh; order: 2; }
+            #map-container { height: 55vh; order: 1; }
+            h1 { font-size: 2em; }
+            .welcome-card { padding: 30px 20px; }
+        }
+    </style>
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=h2e6Ofrn9wP57hIx8yQwAMhzdueEFv0S"></script>
+</head>
+<body>
+
+    <!-- 欢迎页面 -->
+    <div id="welcome-screen" class="screen active">
+        <div class="bg-layer"></div>
+        <div class="overlay-layer"></div>
+        <div class="welcome-card">
+            <div class="csu-logo">
+                <img src="https://www.csu.edu.cn/images/logo.png" alt="CSU Logo" style="width:100%">
+            </div>
+            <h1>岳麓山抗战遗址</h1>
+            <div class="badge">红色基因传承·调研</div>
+            <p style="margin-top:20px; opacity:0.8; letter-spacing:1px; line-height:1.6">中南大学计算机学院 2511 班<br>红色基因传承社会实践团</p>
+            <button class="btn-explore" onclick="enterSystem()">开启数字导览</button>
+            <div style="margin-top:30px; font-size:12px; color:rgba(255,255,255,0.4)">建议在移动端使用以获得最佳导航体验</div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="main-app" class="screen">
+        <aside id="sidebar">
+            <div class="sidebar-brand">
+                <h3 style="margin:0; font-size:1.4em">遗址导览清单</h3>
+                <p style="margin:5px 0 0; opacity:0.7; font-size:12px">点击站点即可查看实景与导航</p>
+            </div>
+            <div id="site-list" class="site-list">
+                <!-- 动态生成站点卡片 -->
+            </div>
+            <div style="padding:15px; border-top:1px solid #eee; text-align:center">
+                <img src="https://www.csu.edu.cn/images/logo.png" style="height:20px; filter:grayscale(1) opacity(0.5)">
+            </div>
+        </aside>
+
+        <main id="map-container">
+            <!-- 地图类型切换 -->
+            <div class="map-type-switch">
+                <button class="map-type-btn active" onclick="setMapType('normal', this)">地图</button>
+                <button class="map-type-btn" onclick="setMapType('satellite', this)">卫星</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div id="info-popup" onclick="if(event.target==this) closePopup()">
+        <div class="popup-window">
+            <div class="popup-header">
+                <div class="popup-close" onclick="closePopup()">✕</div>
+                <img id="popup-img" src="" alt="Site Image">
+            </div>
+            <div class="popup-content">
+                <h2 id="popup-title"></h2>
+                <p id="popup-text"></p>
+                <div class="nav-actions">
+                    <button class="btn-nav btn-main" onclick="navInternal()">
+                        <span>🛰️</span> 实时步行导览 (推荐)
+                    </button>
+                    <div class="btn-sub-row">
+                        <button class="btn-nav btn-outline" onclick="navExternalBaidu()">百度地图</button>
+                        <button class="btn-nav btn-outline" onclick="navExternalGaode()">高德地图</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sitesData = [
+            {
+                id: 1,
+                name: "长沙抗战纪念馆（炮兵指挥所）",
+                point: new BMap.Point(112.93600, 28.19900),
+                img: "http://img1.voc.com.cn/UpLoadFile/2015/09/01/201509011528238902.jpg",
+                desc: "位于云麓峰下，是第九战区岳麓山炮兵指挥所旧址。三次长沙会战期间，在此指挥的重炮群对日军造成了毁灭性打击。"
+            },
+            {
+                id: 2,
+                name: "陆军第七十三军阵亡将士公墓",
+                point: new BMap.Point(112.93550, 28.19650),
+                img: "https://www.krzzjn.com/uploadfile/2018/0531/20180531090429977.jpg",
+                desc: "公墓依山而建，安葬着在长沙会战中壮烈牺牲的将士。墓地肃穆，是后人缅怀抗战英烈的重要场所。"
+            },
+            {
+                id: 3,
+                name: "抗战阵亡将士名录石栏",
+                point: new BMap.Point(112.93400, 28.19850),
+                img: "http://y1.ifengimg.com/a/2015_31/99765a80ee8fcb8.jpg",
+                desc: "云麓宫石栏上刻有五千多位将士的姓名，每一刻划都代表着一个不朽的英魂，见证了会战之惨烈。"
+            },
+            {
+                id: 4,
+                name: "岳麓山古炮台遗址",
+                point: new BMap.Point(112.93100, 28.20050),
+                img: "https://www.krzzjn.com/uploadfile/2020/0615/20200615110810273.jpg",
+                desc: "地理位置险要，是当时控制长沙城区及湘江航道的战略制高点。至今仍保留着清晰的阵地轮廓。"
+            },
+            {
+                id: 5,
+                name: "第九战区司令部临时指挥部",
+                point: new BMap.Point(112.93850, 28.19500),
+                img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Changsha_Yuelu_Shan_Dijiu_Zhanqu_Silingbu_Zhihuisuo_Jiuzhi_2014.03.04_09-34-54.jpg/500px-Changsha_Yuelu_Shan_Dijiu_Zhanqu_Silingbu_Zhihuisuo_Jiuzhi_2014.03.04_09-34-54.jpg",
+                desc: "薛岳将军曾在此防空洞内坐镇指挥，运用著名的“天炉战法”在长沙城郊重创日军主力。"
+            },
+            {
+                id: 6,
+                name: "长沙会战碑",
+                point: new BMap.Point(112.93180, 28.20050),
+                img: "https://dimg04.c-ctrip.com/images/10090s000000ibgj5E8F1_W_750_0.jpg?proc=autoorient",
+                desc: "高耸的纪念碑镌刻着会战纪要，不仅是胜利的见证，更是中华民族不屈不挠精神的象征。"
+            },
+            {
+                id: 7,
+                name: "麓山忠烈祠",
+                point: new BMap.Point(112.92350, 28.18940),
+                img: "https://img.rednet.cn/2022/08-15/63287399-e688-473d-815a-9351e2332675.jpg",
+                desc: "民国时期仿古建筑，是长沙市纪念抗日阵亡将士的重要建筑，现为湖南爱国主义教育基地。"
+            },
+            {
+                id: 8,
+                name: "七十三军纪念塔",
+                point: new BMap.Point(112.92300, 28.19000),
+                img: "https://p1.ssl.qhimg.com/t01b444747b973715df.jpg",
+                desc: "巍峨的纪念塔直指云霄，塔基刻有详细的战斗过程，铭记着那段荡气回肠的抗战历史。"
+            }
+        ];
+
+        let map, currentSite;
+
+        function enterSystem() {
+            const welcome = document.getElementById('welcome-screen');
+            const app = document.getElementById('main-app');
+            welcome.classList.add('zoom-out');
+            setTimeout(() => {
+                welcome.classList.remove('active');
+                app.style.display = 'flex';
+                setTimeout(() => {
+                    app.classList.add('active');
+                    initMap();
+                }, 50);
+            }, 800);
+        }
+
+        function initMap() {
+            map = new BMap.Map("map-container", { enableMapClick: false });
+            map.centerAndZoom(new BMap.Point(112.93400, 28.19500), 15);
+            map.enableScrollWheelZoom(true);
+            map.setMapStyleV2({ styleId: '49265f242e850b5220c3260ef16279f0' });
+
+            const listContainer = document.getElementById('site-list');
+            listContainer.innerHTML = "";
+
+            sitesData.forEach(site => {
+                const marker = new BMap.Marker(site.point);
+                map.addOverlay(marker);
+                marker.addEventListener('click', () => openPopup(site));
+
+                const card = document.createElement('div');
+                card.className = 'site-card';
+                card.id = `site-${site.id}`;
+                card.innerHTML = `
+                    <img src="${site.img}" class="card-thumb" onerror="this.src='https://via.placeholder.com/100?text=遗址'">
+                    <div class="card-info">
+                        <h4>${site.name}</h4>
+                        <p>点击查看现场实景</p>
+                    </div>
+                `;
+                card.onclick = () => {
+                    focusSite(site);
+                };
+                listContainer.appendChild(card);
+            });
+        }
+
+        function focusSite(site) {
+            map.panTo(site.point);
+            map.setZoom(17);
+            openPopup(site);
+            // 高亮当前选中卡片
+            document.querySelectorAll('.site-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`site-${site.id}`).classList.add('active');
+        }
+
+        function setMapType(type, btn) {
+            document.querySelectorAll('.map-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(type === 'satellite') {
+                map.setMapType(BMAP_SATELLITE_MAP);
+            } else {
+                map.setMapType(BMAP_NORMAL_MAP);
+            }
+        }
+
+        function openPopup(site) {
+            currentSite = site;
+            document.getElementById('popup-title').innerText = site.name;
+            document.getElementById('popup-text').innerText = site.desc;
+            document.getElementById('popup-img').src = site.img;
+            document.getElementById('info-popup').style.display = 'block';
+        }
+
+        function closePopup() { document.getElementById('info-popup').style.display = 'none'; }
+
+        function navInternal() {
+            if (!currentSite) return;
+            const status = showStatus("🛰️ 正在精確校準定位，請稍候...");
+            navigator.geolocation.getCurrentPosition(pos => {
+                const gpsPoint = new BMap.Point(pos.coords.longitude, pos.coords.latitude);
+                new BMap.Convertor().translate([gpsPoint], 1, 5, (data) => {
+                    if(data.status === 0) {
+                        removeStatus(status);
+                        closePopup();
+                        map.clearOverlays();
+                        initMap(); 
+                        new BMap.WalkingRoute(map, { renderOptions: { map: map, autoViewport: true } }).search(data.points[0], currentSite.point);
+                        showStatus("✅ 已規劃步行路線", 3000);
+                    }
+                });
+            }, () => {
+                removeStatus(status);
+                alert("定位失敗。請檢查：\n1. 手機 GPS 是否開啟\n2. 瀏覽器位置授權\n3. 建議在 HTTPS 環境下訪問");
+            }, { timeout: 10000 });
+        }
+
+        function navExternalBaidu() {
+            window.open(`https://api.map.baidu.com/marker?location=${currentSite.point.lat},${currentSite.point.lng}&title=${encodeURIComponent(currentSite.name)}&content=${encodeURIComponent(currentSite.desc)}&output=html`);
+        }
+
+        function navExternalGaode() {
+            const x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+            const x = currentSite.point.lng - 0.0065, y = currentSite.point.lat - 0.006;
+            const z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+            const theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+            window.open(`https://uri.amap.com/marker?position=${z * Math.cos(theta)},${z * Math.sin(theta)}&name=${encodeURIComponent(currentSite.name)}&coordinate=gcj02&callnative=1`);
+        }
+
+        function showStatus(msg, duration = 0) {
+            const div = document.createElement('div');
+            div.innerText = msg;
+            div.style = "position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:white; padding:15px 30px; border-radius:50px; z-index:9999; font-size:14px; backdrop-filter:blur(10px); box-shadow:0 10px 30px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1);";
+            document.body.appendChild(div);
+            if(duration > 0) setTimeout(() => removeStatus(div), duration);
+            return div;
+        }
+        function removeStatus(el) { if(el && el.parentNode) el.parentNode.removeChild(el); }
+    </script>
+</body>
+</html>
